@@ -24,6 +24,19 @@
 - 转码产物命名：`<name>-16kconver.wav`
 - 降噪产物命名：`<name>-remove-noise.wav`
 
+### 🖼️ 界面预览
+- 主页：
+
+  ![UI](assets/ui.png)
+
+- 处理中：
+
+  ![Processing](assets/processing.png)
+
+- 完成：
+
+  ![Done](assets/done.png)
+
 ---
 
 ## 🚀 快速开始（3 步）
