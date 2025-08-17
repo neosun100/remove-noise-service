@@ -830,6 +830,34 @@ def index():
             font-size: 0.85em;
             color: #666;
         }}
+
+        /* QR follow section */
+        .qr-section {{
+            margin-top: 32px;
+            padding: 20px 16px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #f9fbff, #eef3ff);
+            border: 1px solid #e5ebff;
+            text-align: center;
+        }}
+        .qr-title {{
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+        }}
+        .qr-img {{
+            width: 240px;
+            max-width: 70%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            margin: 8px auto 6px auto;
+            display: block;
+        }}
+        .qr-caption {{
+            color: #4b5563;
+            font-size: 0.95em;
+        }}
         
         @media (max-width: 600px) {{
             .container {{
@@ -878,6 +906,12 @@ def index():
             <div class="url-info">
                 🔗 当前访问地址: __BASE_URL__
             </div>
+        </div>
+
+        <div class="qr-section">
+            <div class="qr-title">📣 关注公众号，获取更多 AI 工具深度测评与实战教程</div>
+            <img class="qr-img" src="https://img.aws.xin/uPic/扫码_搜索联合传播样式-标准色版.png" alt="扫码关注AI健自习室">
+            <div class="qr-caption"><strong>长按/扫码关注「AI健自习室」</strong></div>
         </div>
     </div>
 
