@@ -5,6 +5,7 @@ logs
 runtime
 tmp
 models
+hf_cache
 .idea
 *.bat
 *.7z
