@@ -39,8 +39,74 @@
         .subtitle {
             text-align: center;
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 1.1em;
+        }
+        
+        .github-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .github-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .github-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-star {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .btn-star:hover {
+            background: linear-gradient(135deg, #5568d3, #6a3f8f);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .btn-bug {
+            background: white;
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+        
+        .btn-bug:hover {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-feature {
+            background: white;
+            color: #3498db;
+            border-color: #3498db;
+        }
+        
+        .btn-feature:hover {
+            background: #3498db;
+            color: white;
         }
         
         .info-box {
@@ -324,6 +390,18 @@
     <div class="container">
         <h1>🎵 音频降噪处理系统</h1>
         <div class="subtitle">基于 AI 的专业音频降噪服务 · 快速 · 高效 · 精准</div>
+        
+        <div class="github-buttons">
+            <a href="https://github.com/neosun100/remove-noise-service" target="_blank" class="github-btn btn-star">
+                ⭐ Star on GitHub
+            </a>
+            <a href="https://github.com/neosun100/remove-noise-service/issues/new?labels=bug" target="_blank" class="github-btn btn-bug">
+                🐛 Report Bug
+            </a>
+            <a href="https://github.com/neosun100/remove-noise-service/issues/new?labels=enhancement" target="_blank" class="github-btn btn-feature">
+                💡 Request Feature
+            </a>
+        </div>
         
         <div class="info-box">
             <h3>📖 使用说明</h3>
