@@ -22,6 +22,7 @@ filelock==3.13.1
 Flask==3.1.0
 Flask-Cors==5.0.0
 flasgger==0.9.7.1
+mistune==2.0.5
 frozenlist==1.5.0
 fsspec==2024.2.0
 huggingface-hub==0.26.2

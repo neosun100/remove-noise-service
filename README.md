@@ -371,3 +371,63 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ![WeChat Official Account](https://img.aws.xin/uPic/扫码_搜索联合传播样式-标准色版.png)
 
 **Scan to follow "AI健自习室" for more AI tools and tutorials**
+
+---
+
+## 🎮 GPU 显存管理
+
+本项目实现了智能的 GPU 显存管理，支持 CPU/GPU 之间的模型转移，确保资源高效利用。
+
+### 核心特性
+
+- ✅ **懒加载**：首次请求时才加载模型
+- ✅ **即用即卸**：任务完成后自动卸载到 CPU
+- ✅ **智能缓存**：CPU 缓存实现快速恢复（2-5秒）
+- ✅ **完全释放**：空闲时 GPU 显存 < 1GB
+
+### 性能指标
+
+| 指标 | 数值 |
+|------|------|
+| 空闲显存 | 543 MB (↓87%) |
+| 恢复速度 | 2-5秒 (↑5x) |
+| 首次加载 | 20-30秒 |
+
+### 文档
+
+- 📘 [快速参考](QUICK_REFERENCE.md) - 5分钟上手
+- 📗 [最佳实践](GPU_MEMORY_BEST_PRACTICES.md) - 完整指南（可复用到其他项目）
+- 📙 [使用文档](GPU_MANAGEMENT.md) - API 说明
+- 📋 [文档索引](DOCS_INDEX.md) - 导航指南
+
+### API 端点
+
+```bash
+# 查看 GPU 状态
+curl https://noise.aws.xin/gpu/status
+
+# 手动卸载到 CPU
+curl -X POST https://noise.aws.xin/gpu/offload
+
+# 完全释放资源
+curl -X POST https://noise.aws.xin/gpu/release
+```
+
+### 复用到其他项目
+
+```bash
+# 1. 复制管理器
+cp gpu_manager.py your_project/
+
+# 2. 初始化
+gpu_manager = GPUResourceManager(idle_timeout=600)
+gpu_manager.start_monitor()
+
+# 3. 使用（3步）
+model = gpu_manager.get_model(load_func=load_model)
+result = model(data)
+gpu_manager.force_offload()  # 关键！
+```
+
+详见 [GPU_MEMORY_BEST_PRACTICES.md](GPU_MEMORY_BEST_PRACTICES.md)
+

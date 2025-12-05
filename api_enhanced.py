@@ -335,11 +335,21 @@ def save_audio(file_data, original_filename, task_id):
         
         logger.info(f"文件保存成功: {original_path}, 大小: {len(file_data)} bytes")
         
-        update_task_progress(task_id, 30, 'processing', '正在转换音频格式...')
+        # 检查是否为视频文件
+        video_extensions = ['.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm', '.m4v', '.mpeg', '.mpg']
+        file_ext = Path(filename).suffix.lower()
+        is_video = file_ext in video_extensions
+        
+        if is_video:
+            update_task_progress(task_id, 20, 'processing', '检测到视频文件，正在提取音频...')
+            logger.info(f"检测到视频文件: {filename}，开始提取音频")
+        else:
+            update_task_progress(task_id, 30, 'processing', '正在转换音频格式...')
         
         cover_file = f'{Path(filename).stem}-16kconver.wav'
         convert_result = runffmpeg([
             '-y', '-i', original_path,
+            '-vn',  # 不处理视频流
             '-ar', '16000', '-ac', '1',
             f'{TMPDIR}/{cover_file}'
         ])
@@ -357,8 +367,11 @@ def save_audio(file_data, original_filename, task_id):
             os.remove(original_path)
         except:
             pass
-            
-        update_task_progress(task_id, 50, 'processing', '音频转换完成，准备降噪处理...')
+        
+        if is_video:
+            update_task_progress(task_id, 50, 'processing', '音频提取完成，准备降噪处理...')
+        else:
+            update_task_progress(task_id, 50, 'processing', '音频转换完成，准备降噪处理...')
         return converted_path
         
     except Exception as e:
@@ -432,14 +445,20 @@ def remove_noise_with_realtime_progress(audio_path, output_file, task_id, base_u
             )
             
             logger.info(f"降噪处理成功: {output_file}, 大小: {file_size} bytes")
+            
+            # 处理完成后立即卸载 GPU 显存到 CPU
+            gpu_manager.force_offload()
+            
             return output_file
         else:
             update_task_progress(task_id, 0, 'failed', '降噪处理失败')
+            gpu_manager.force_offload()
             return audio_path
             
     except Exception as e:
         logger.error(f"降噪处理异常: {e}")
         update_task_progress(task_id, 0, 'failed', f'降噪处理失败: {str(e)}')
+        gpu_manager.force_offload()
         return audio_path
 
 def process_audio_async(converted_path, task_id, base_url=None):
@@ -763,11 +782,78 @@ def gpu_status():
       200:
         description: GPU 状态信息
     """
+    status = gpu_manager.get_status()
+    status['idle_timeout'] = GPU_IDLE_TIMEOUT
+    status['will_release_in'] = max(0, GPU_IDLE_TIMEOUT - status['idle_time'])
+    return jsonify(status)
+
+@app.route('/gpu/offload', methods=['POST'])
+def gpu_offload():
+    """
+    手动卸载 GPU 显存到 CPU
+    ---
+    tags:
+      - 系统管理
+    responses:
+      200:
+        description: 卸载成功
+        schema:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 0
+            msg:
+              type: string
+              example: GPU 显存已卸载到 CPU
+            status:
+              type: object
+    """
+    success = gpu_manager.force_offload()
+    status = gpu_manager.get_status()
+    
+    if success:
+        return jsonify({
+            'code': 0,
+            'msg': 'GPU 显存已卸载到 CPU',
+            'status': status
+        })
+    else:
+        return jsonify({
+            'code': 1,
+            'msg': '没有需要卸载的模型',
+            'status': status
+        })
+
+@app.route('/gpu/release', methods=['POST'])
+def gpu_release():
+    """
+    手动完全释放所有资源（GPU + CPU）
+    ---
+    tags:
+      - 系统管理
+    responses:
+      200:
+        description: 释放成功
+        schema:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 0
+            msg:
+              type: string
+              example: 所有资源已释放
+            status:
+              type: object
+    """
+    gpu_manager.force_release()
+    status = gpu_manager.get_status()
+    
     return jsonify({
-        'model_loaded': gpu_manager.is_model_loaded(),
-        'idle_time': int(gpu_manager.get_idle_time()),
-        'idle_timeout': GPU_IDLE_TIMEOUT,
-        'will_release_in': max(0, GPU_IDLE_TIMEOUT - int(gpu_manager.get_idle_time()))
+        'code': 0,
+        'msg': '所有资源已释放',
+        'status': status
     })
 
 @app.route('/')

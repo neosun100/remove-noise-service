@@ -107,7 +107,7 @@ sudo apt-get install libsndfile1
 * 本模型要求modelscope library版本 >=1.20，若不满足可按以下方式进行升级。
 
 ```shell
-pip install modelscope -U
+pip install modelscope==1.22.0
 # 如仍缺少依赖, 可按下述补充安装
 pip install simplejson datasets==2.18.0 addict sortedcontainers
 ```
