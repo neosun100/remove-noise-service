@@ -407,7 +407,7 @@
             <h3>📖 使用说明</h3>
             <ul>
                 <li><strong>支持格式：</strong>MP3、WAV、M4A、AAC、FLAC 等常见音频格式</li>
-                <li><strong>文件大小：</strong>最大支持 50MB</li>
+                <li><strong>文件大小：</strong>无限制（建议单个文件不超过 500MB 以获得最佳性能）</li>
                 <li><strong>处理时间：</strong>通常 30-90 秒（取决于文件大小）</li>
                 <li><strong>降噪效果：</strong>基于 ModelScope ZipEnhancer 模型，适用于通用场景</li>
                 <li><strong>自动清理：</strong>处理后的文件将在 1 小时后自动删除</li>
@@ -424,7 +424,7 @@
         <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📁</div>
             <div class="upload-text">点击选择音频文件或拖拽到此处</div>
-            <div class="upload-hint">支持 MP3、WAV、M4A 等格式，最大 50MB</div>
+            <div class="upload-hint">支持 MP3、WAV、M4A 等格式，无文件大小限制</div>
             <input type="file" id="fileInput" accept="audio/*">
         </div>
         
@@ -510,11 +510,8 @@
         });
 
         function uploadFile(file) {
-            if (file.size > 50 * 1024 * 1024) {
-                showError('文件大小不能超过 50MB');
-                return;
-            }
-
+            // 移除文件大小限制，允许处理任意大小的音频文件
+            
             const formData = new FormData();
             formData.append('audio', file);
 

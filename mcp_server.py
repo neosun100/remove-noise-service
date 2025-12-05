@@ -28,8 +28,8 @@ REPO_ROOT = Path(__file__).resolve().parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-# Import the application logic from api.py
-import api as app
+# Import the application logic from api_enhanced.py
+import api_enhanced as app
 
 mcp = FastMCP("remove-noise-mcp")
 

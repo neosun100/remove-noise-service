@@ -543,7 +543,7 @@ def upload_file_async():
         in: formData
         type: file
         required: true
-        description: 音频文件（支持 MP3、WAV、M4A 等格式，最大 50MB）
+        description: 音频文件（支持 MP3、WAV、M4A 等格式）
     responses:
       200:
         description: 上传成功，返回任务ID
@@ -580,8 +580,8 @@ def upload_file_async():
         size = file.tell()
         file.seek(0)
         
-        if size > 50 * 1024 * 1024:
-            return jsonify({'code': -1, 'msg': '文件大小不能超过50MB'})
+        # 记录文件大小用于日志
+        logger.info(f"接收到文件: {file.filename}, 大小: {size} bytes ({size/1024/1024:.2f} MB)")
         
         file_data = file.read()
         original_filename = file.filename
