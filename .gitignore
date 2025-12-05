@@ -1,15 +1,92 @@
-__pycache__
-build
-dist
-logs
-runtime
-tmp
-hf_cache
-.idea
-*.bat
-*.7z
-*.bak
-*.spec
-*.exe
+# 敏感信息
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.p12
+secrets/
+credentials/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# 日志
+*.log
+logs/
+*.log.*
+
+# 临时文件
+tmp/*
+!tmp/.gitkeep
 *.tmp
-*.wav
+*.temp
+*.cache
+
+# 模型文件（太大）
+models/*
+!models/.gitkeep
+
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+
+# 操作系统
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Docker
+.dockerignore
+
+# 测试
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+
+# 其他
+*.bak
+*.orig
+.mypy_cache/
+.dmypy.json
+dmypy.json

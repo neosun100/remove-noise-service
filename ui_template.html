@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频降噪处理系统 - AI 驱动的专业降噪服务</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #f0f4ff, #e8f2ff);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .info-box li {
+            padding: 8px 0;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .info-box li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #fafafa;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e8f2ff;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon { font-size: 4em; color: #667eea; margin-bottom: 20px; }
+        .upload-text { font-size: 1.2em; color: #666; margin-bottom: 10px; }
+        .upload-hint { color: #999; font-size: 0.9em; }
+        
+        #fileInput { display: none; }
+        
+        .progress-container { display: none; margin: 30px 0; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 35px;
+            background: #f0f0f0;
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffa726, #ff7043);
+            transition: all 0.3s ease;
+            border-radius: 18px;
+            position: relative;
+        }
+        
+        .progress-fill.stage-processing {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            animation: processing-glow 2s ease-in-out infinite alternate;
+        }
+        
+        .progress-fill.stage-completing {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+        }
+        
+        @keyframes processing-glow {
+            from { box-shadow: 0 0 10px rgba(102, 126, 234, 0.5); }
+            to { box-shadow: 0 0 20px rgba(102, 126, 234, 0.8); }
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .status-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #555;
+            font-weight: 500;
+            min-height: 30px;
+        }
+        
+        .processing-stats {
+            background: linear-gradient(135deg, #f0f4ff, #e8f2ff);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-size: 0.95em;
+            color: #555;
+            display: none;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-item {
+            display: inline-block;
+            margin: 5px 15px 5px 0;
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        
+        .result-container {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9ff, #e8f2ff);
+            border-radius: 15px;
+            border: 1px solid #e0e8ff;
+        }
+        
+        .result-title {
+            color: #333;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .download-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            display: inline-block;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .error {
+            color: #e74c3c;
+            background: #ffeaea;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #e74c3c;
+            margin: 15px 0;
+        }
+        
+        .success {
+            color: #27ae60;
+            background: #eafaf1;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #27ae60;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-item:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; color: #555; }
+        .info-value { color: #333; word-break: break-all; }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 0.9em;
+        }
+        
+        .api-links {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .api-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 500;
+        }
+        
+        .api-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .qr-section {
+            margin-top: 32px;
+            padding: 20px 16px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #f9fbff, #eef3ff);
+            border: 1px solid #e5ebff;
+            text-align: center;
+        }
+        
+        .qr-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        
+        .qr-img {
+            width: 240px;
+            max-width: 70%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            margin: 8px auto 6px auto;
+            display: block;
+        }
+        
+        .qr-caption {
+            color: #4b5563;
+            font-size: 0.95em;
+        }
+        
+        @media (max-width: 600px) {
+            .container { padding: 20px; margin: 10px; }
+            h1 { font-size: 2em; }
+            .upload-area { padding: 40px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 音频降噪处理系统</h1>
+        <div class="subtitle">基于 AI 的专业音频降噪服务 · 快速 · 高效 · 精准</div>
+        
+        <div class="info-box">
+            <h3>📖 使用说明</h3>
+            <ul>
+                <li><strong>支持格式：</strong>MP3、WAV、M4A、AAC、FLAC 等常见音频格式</li>
+                <li><strong>文件大小：</strong>最大支持 50MB</li>
+                <li><strong>处理时间：</strong>通常 30-90 秒（取决于文件大小）</li>
+                <li><strong>降噪效果：</strong>基于 ModelScope ZipEnhancer 模型，适用于通用场景</li>
+                <li><strong>自动清理：</strong>处理后的文件将在 1 小时后自动删除</li>
+            </ul>
+        </div>
+        
+        <div class="api-links">
+            <strong>开发者资源：</strong>
+            <a href="/docs" target="_blank">📚 API 文档</a>
+            <a href="/health" target="_blank">💊 健康检查</a>
+            <a href="/gpu/status" target="_blank">🎮 GPU 状态</a>
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">点击选择音频文件或拖拽到此处</div>
+            <div class="upload-hint">支持 MP3、WAV、M4A 等格式，最大 50MB</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+            </div>
+            <div class="status-text" id="statusText">准备中...</div>
+            <div class="processing-stats" id="processingStats"></div>
+        </div>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="result-title">✅ 处理完成</div>
+            <div id="resultContent"></div>
+        </div>
+        
+        <div class="footer">
+            <p>🌐 服务地址: __BASE_URL__ | 📁 文件自动清理: 1小时</p>
+            <p style="margin-top: 10px; color: #667eea;">GPU 空闲超时: __GPU_TIMEOUT__ 分钟 | 模型状态: <span id="gpuStatus">检测中...</span></p>
+        </div>
+
+        <div class="qr-section">
+            <div class="qr-title">📣 关注公众号，获取更多 AI 工具深度测评与实战教程</div>
+            <img class="qr-img" src="https://img.aws.xin/uPic/扫码_搜索联合传播样式-标准色版.png" alt="扫码关注AI健自习室">
+            <div class="qr-caption"><strong>长按/扫码关注「AI健自习室」</strong></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTaskId = null;
+        let statusCheckInterval = null;
+        let startTime = null;
+        let lastProgress = 0;
+        
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const resultContainer = document.getElementById('resultContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const statusText = document.getElementById('statusText');
+        const processingStats = document.getElementById('processingStats');
+
+        // 检查 GPU 状态
+        function checkGPUStatus() {
+            fetch('/gpu/status')
+                .then(res => res.json())
+                .then(data => {
+                    const status = data.model_loaded ? '✅ 已加载' : '💤 空闲';
+                    document.getElementById('gpuStatus').textContent = status;
+                })
+                .catch(() => {
+                    document.getElementById('gpuStatus').textContent = '❓ 未知';
+                });
+        }
+        
+        checkGPUStatus();
+        setInterval(checkGPUStatus, 30000);
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) uploadFile(file);
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) uploadFile(files[0]);
+        });
+
+        function uploadFile(file) {
+            if (file.size > 50 * 1024 * 1024) {
+                showError('文件大小不能超过 50MB');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('audio', file);
+
+            progressContainer.style.display = 'block';
+            resultContainer.style.display = 'none';
+            uploadArea.style.display = 'none';
+            startTime = Date.now();
+            lastProgress = 0;
+            
+            updateProgress(5, '正在上传文件...', 'uploading');
+
+            fetch('/upload_async', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 0) {
+                    currentTaskId = data.data.task_id;
+                    updateProgress(10, '上传完成，开始处理...', 'uploaded');
+                    startStatusCheck();
+                } else {
+                    showError(data.msg);
+                }
+            })
+            .catch(error => {
+                showError('上传失败: ' + error.message);
+            });
+        }
+
+        function startStatusCheck() {
+            statusCheckInterval = setInterval(checkStatus, 500);
+        }
+
+        function checkStatus() {
+            if (!currentTaskId) return;
+
+            fetch(`/status/${currentTaskId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 0) {
+                    const taskData = data.data;
+                    const progress = Math.max(lastProgress, taskData.progress);
+                    lastProgress = progress;
+                    
+                    let stage = 'processing';
+                    if (progress >= 95) stage = 'completing';
+                    else if (progress >= 80) stage = 'processing';
+                    else if (progress >= 30) stage = 'converting';
+                    
+                    updateProgress(progress, taskData.message, stage);
+                    
+                    if (taskData.detailed_info) {
+                        updateProcessingStats(taskData.detailed_info);
+                    }
+                    
+                    if (taskData.status === 'completed') {
+                        showResult(taskData);
+                        clearInterval(statusCheckInterval);
+                        checkGPUStatus();
+                    } else if (taskData.status === 'failed') {
+                        showError(taskData.message);
+                        clearInterval(statusCheckInterval);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('状态检查失败:', error);
+            });
+        }
+
+        function updateProgress(percent, message, stage = 'processing') {
+            progressFill.style.width = percent + '%';
+            progressText.textContent = percent + '%';
+            progressFill.className = `progress-fill stage-${stage}`;
+            
+            let spinner = '<span class="loading-spinner"></span>';
+            statusText.innerHTML = `${spinner}${message}`;
+        }
+
+        function updateProcessingStats(detailedInfo) {
+            if (!detailedInfo) return;
+            
+            let statsHtml = '';
+            
+            if (detailedInfo.elapsed_time) {
+                const elapsed = Math.round(detailedInfo.elapsed_time);
+                statsHtml += `<span class="stat-item">⏱️ 已处理: ${elapsed}秒</span>`;
+            }
+            
+            if (detailedInfo.eta_seconds && detailedInfo.eta_seconds > 0) {
+                statsHtml += `<span class="stat-item">⏳ 预计剩余: ${detailedInfo.eta_seconds}秒</span>`;
+            }
+            
+            if (detailedInfo.model_progress) {
+                statsHtml += `<span class="stat-item">🔧 模型进度: ${detailedInfo.model_progress.toFixed(1)}%</span>`;
+            }
+            
+            if (detailedInfo.processing_speed && detailedInfo.processing_speed > 0) {
+                statsHtml += `<span class="stat-item">⚡ 处理速度: ${detailedInfo.processing_speed.toFixed(1)}%/s</span>`;
+            }
+            
+            if (statsHtml) {
+                processingStats.innerHTML = statsHtml;
+                processingStats.style.display = 'block';
+            }
+        }
+
+        function showResult(data) {
+            progressContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+            
+            const totalTime = data.detailed_info && data.detailed_info.processing_time ? 
+                Math.round(data.detailed_info.processing_time) : 
+                Math.round((Date.now() - startTime) / 1000);
+            
+            const fileSize = data.detailed_info && data.detailed_info.file_size ?
+                (data.detailed_info.file_size / 1024 / 1024).toFixed(2) + ' MB' :
+                '未知';
+            
+            const resultContent = document.getElementById('resultContent');
+            resultContent.innerHTML = `
+                <div class="success">🎉 音频降噪处理成功！</div>
+                <div class="info-item">
+                    <span class="info-label">任务ID:</span>
+                    <span class="info-value">${data.task_id}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">处理时间:</span>
+                    <span class="info-value">${totalTime} 秒</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">文件大小:</span>
+                    <span class="info-value">${fileSize}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">完成时间:</span>
+                    <span class="info-value">${new Date(data.timestamp * 1000).toLocaleString()}</span>
+                </div>
+                <div style="text-align: center; margin-top: 25px;">
+                    <a href="${data.result_url}" class="download-btn" download>
+                        🎵 下载处理后的音频
+                    </a>
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button onclick="resetUpload()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+                        🔄 处理新文件
+                    </button>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            progressContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+            uploadArea.style.display = 'block';
+            
+            const resultContent = document.getElementById('resultContent');
+            resultContent.innerHTML = `
+                <div class="error">❌ ${message}</div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button onclick="resetUpload()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+                        🔄 重新尝试
+                    </button>
+                </div>
+            `;
+        }
+
+        function resetUpload() {
+            currentTaskId = null;
+            startTime = null;
+            lastProgress = 0;
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+                statusCheckInterval = null;
+            }
+            
+            progressContainer.style.display = 'none';
+            resultContainer.style.display = 'none';
+            processingStats.style.display = 'none';
+            uploadArea.style.display = 'block';
+            fileInput.value = '';
+        }
+    </script>
+</body>
+</html>

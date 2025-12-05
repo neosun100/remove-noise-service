@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  remove-noise:
+    build: .
+    container_name: remove-noise-service
+    ports:
+      - "${PORT:-5080}:5080"
+    environment:
+      - CUSTOM_DOMAIN=${CUSTOM_DOMAIN:-}
+      - USE_HTTPS=${USE_HTTPS:-true}
+      - GPU_IDLE_TIMEOUT=${GPU_IDLE_TIMEOUT:-10}
+    volumes:
+      - ./tmp:/app/tmp
+      - ./models:/app/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['${GPU_ID:-0}']
+              capabilities: [gpu]
+    restart: unless-stopped
+    network_mode: bridge

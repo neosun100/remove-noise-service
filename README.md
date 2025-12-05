@@ -1,196 +1,373 @@
-# 🎧 remove-noise-service · 一键音频降噪 + Web UI + API
+# 🎵 Audio Noise Removal Service
 
-用一句话概括：把嘈杂音/视频丢进来，得到更清晰的语音输出。内置精简好用的 Web UI、稳定的后端 API、以及生产可用的进度反馈与错误处理。开箱即用，不折腾。🚀
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md)
 
----
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://www.docker.com/)
+[![CUDA](https://img.shields.io/badge/CUDA-12.1-green.svg)](https://developer.nvidia.com/cuda-toolkit)
 
-## ✨ 你会喜欢它的理由
-- 🔊 **效果靠谱**：基于 ModelScope 的 ZipEnhancer 模型，通用场景表现稳定
-- ⚡ **交互顺滑**：上传→转码→降噪→下载，全程 UI 实时进度与 ETA 提示
-- 🔁 **同步/异步全覆盖**：既能一把梭 `/api`，也能走 `/upload_async` + `/status/<task_id>`
-- 🧠 **鲁棒性**：自动修复 NaN/Inf、校验空文件、FFmpeg 超时/报错可见
-- 🌐 **生产友好**：`CUSTOM_DOMAIN` + 反代头适配，自动拼装公网下载 URL
-- 🧼 **自清洁**：后台定时清理 `tmp/` 与过期任务状态，不拖泥带水
-- 🖥️ **零前端成本**：主页 `/` 内置现代化 UI，无需构建工具
-
-> 小提示：仓库内自带轻量模型文件（`models/`），初次体验无需额外下载。
+> AI-powered audio noise removal service with automatic GPU management, real-time progress tracking, and comprehensive API documentation.
 
 ---
 
-## 🧭 它是如何工作的（简图）
-```
-原始音/视频 ──> FFmpeg 转 16kHz/单声道 ──> ZipEnhancer 降噪 ──> 输出 WAV ──> 可下载 URL/直传
-```
-- 转码产物命名：`<name>-16kconver.wav`
-- 降噪产物命名：`<name>-remove-noise.wav`
+## ✨ Features
 
-### 🖼️ 界面预览
-- 主页：
-
-  ![UI](assets/ui.png)
-
-- 处理中：
-
-  ![Processing](assets/processing.png)
-
-- 完成：
-
-  ![Done](assets/done.png)
+- 🎯 **AI-Powered Denoising**: Based on ModelScope ZipEnhancer model
+- 🎮 **Smart GPU Management**: Auto-select least busy GPU, auto-release on idle
+- 🐳 **Docker Ready**: One-command deployment with full GPU support
+- 📚 **Swagger API Docs**: Interactive API documentation at `/docs`
+- 🌐 **Dual Mode**: Modern Web UI + RESTful API
+- ⚡ **Real-time Progress**: Live progress bar with ETA and processing speed
+- 🔄 **Auto Cleanup**: Temporary files cleaned after 1 hour
+- 🌍 **Multi-language**: English, Chinese (Simplified/Traditional), Japanese
 
 ---
 
-## 🚀 快速开始（3 步）
-1) 安装依赖（建议虚拟环境）
+## 🚀 Quick Start
+
+### Option 1: Docker (Recommended)
+
 ```bash
+# Clone repository
+git clone https://github.com/yourusername/remove-noise-service.git
+cd remove-noise-service
+
+# Start service (auto-selects best GPU)
+./start.sh
+
+# Access service
+# Web UI: http://0.0.0.0:5080
+# API Docs: http://0.0.0.0:5080/docs
+```
+
+### Option 2: Direct Run
+
+```bash
+# Install dependencies
 pip install -r requirements.txt --no-deps
-```
-2) 可选：安装 CUDA 12.1 版 PyTorch（如需 GPU）
-```bash
-pip uninstall -y torch torchaudio torchvision
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-```
-3) 运行服务
-```bash
-python api.py
-```
-- UI：`http://127.0.0.1:5080`
-- 健康检查：`/health`
 
-系统依赖：
-- Ubuntu/Debian: `sudo apt-get update && sudo apt-get install -y ffmpeg libsndfile1`
-- CentOS/RHEL: `sudo yum install -y ffmpeg libsndfile`
+# Install system dependencies (Ubuntu/Debian)
+sudo apt-get update && sudo apt-get install -y ffmpeg libsndfile1
 
-> 重要：请确保 `datasets==3.0.0`，否则 ModelScope 可能报错。
+# Start service
+python api_enhanced.py
+
+# Access: http://127.0.0.1:5080
+```
 
 ---
 
-## 🖱️ 用法指南（超简单）
-### 1) 直接用网页
-- 打开主页 `/` → 拖放或选择文件 → 点击开始 → 等待进度条走完 → 下载结果
-- UI 会展示：上传→转码→模型处理→完成，整个链路的进度、剩余时间、文件大小等信息
+## 📦 Installation
 
-### 2) 用异步 API（推荐集成）
-- 上传并触发任务
+### Prerequisites
+
+- **Docker**: 20.10+ (for Docker deployment)
+- **Docker Compose**: 1.29+
+- **NVIDIA Docker**: nvidia-docker2
+- **GPU**: NVIDIA GPU with 4GB+ VRAM
+- **Python**: 3.10+ (for direct run)
+- **CUDA**: 12.1+ (for GPU acceleration)
+
+### System Dependencies
+
 ```bash
-curl -F "audio=@./300.wav" http://127.0.0.1:5080/upload_async
-# => {"code":0,"data":{"task_id":"...","status_url":"http://127.0.0.1:5080/status/<task_id>"}}
-```
-- 轮询状态
-```bash
-curl http://127.0.0.1:5080/status/<task_id>
-# status=completed 后，从 data.result_url 下载
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install -y ffmpeg libsndfile1
+
+# CentOS/RHEL
+sudo yum install -y ffmpeg libsndfile
 ```
 
-### 3) 同步 API（向后兼容）
-- 返回下载 URL：
+### Docker Installation
+
+```bash
+# 1. Clone repository
+git clone https://github.com/yourusername/remove-noise-service.git
+cd remove-noise-service
+
+# 2. Configure (optional)
+cp .env.example .env
+nano .env
+
+# 3. Start service
+./start.sh
+```
+
+### Direct Installation
+
+```bash
+# 1. Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# 2. Install dependencies
+pip install -r requirements.txt --no-deps
+
+# 3. Install PyTorch with CUDA
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# 4. Start service
+python api_enhanced.py
+```
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Create `.env` file from template:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `PORT` | Service port | 5080 | 5080 |
+| `CUSTOM_DOMAIN` | Custom domain | - | noise.example.com |
+| `USE_HTTPS` | Use HTTPS | true | true/false |
+| `GPU_IDLE_TIMEOUT` | GPU idle timeout (minutes) | 10 | 10 |
+| `GPU_ID` | GPU ID (auto-selected) | 0 | 0, 1, 2... |
+
+### Example Configurations
+
+**Development**:
+```env
+PORT=5080
+GPU_IDLE_TIMEOUT=5
+USE_HTTPS=false
+```
+
+**Production**:
+```env
+PORT=5080
+CUSTOM_DOMAIN=noise.example.com
+USE_HTTPS=true
+GPU_IDLE_TIMEOUT=10
+```
+
+---
+
+## 💻 Usage
+
+### Web UI
+
+1. Open browser: http://0.0.0.0:5080
+2. Drag & drop audio file or click to select
+3. Wait for processing (real-time progress shown)
+4. Download result
+
+### API Usage
+
+#### Async Processing (Recommended)
+
+```bash
+# 1. Upload file
+curl -X POST http://localhost:5080/upload_async \
+  -F "audio=@your_audio.mp3"
+
+# Response:
+# {
+#   "code": 0,
+#   "data": {
+#     "task_id": "uuid-here",
+#     "status_url": "http://localhost:5080/status/uuid-here"
+#   }
+# }
+
+# 2. Check status
+curl http://localhost:5080/status/<task_id>
+
+# 3. Download result (from result_url in response)
+```
+
+#### Sync Processing
+
+```bash
+# Return URL
+curl -X POST http://localhost:5080/api \
+  -F "audio=@your_audio.mp3" \
+  -F "stream=0"
+
+# Direct download
+curl -X POST http://localhost:5080/api \
+  -F "audio=@your_audio.mp3" \
+  -F "stream=1" \
+  -o output.wav
+```
+
+### Python Example
+
 ```python
 import requests
-print(requests.post(
-  'http://127.0.0.1:5080/api',
-  data={'stream': 0},
-  files={'audio': open('./300.wav', 'rb')}
-).json())
-```
-- 直接返回 WAV 内容：
-```python
-import requests
-res = requests.post(
-  'http://127.0.0.1:5080/api',
-  data={'stream': 1},
-  files={'audio': open('./300.wav', 'rb')}
+
+# Async upload
+response = requests.post(
+    'http://localhost:5080/upload_async',
+    files={'audio': open('input.mp3', 'rb')}
 )
-with open('denoised.wav', 'wb') as f:
-  f.write(res.content)
+task_id = response.json()['data']['task_id']
+
+# Check status
+status = requests.get(f'http://localhost:5080/status/{task_id}')
+print(status.json())
 ```
 
 ---
 
-## ⚙️ 环境与配置
-- `CUSTOM_DOMAIN`：设置公网域名（如 `noise.aws.xin`）用于拼接下载 URL
-- `USE_HTTPS`：当反代走 HTTPS 时设 `true`（默认），否则 `false`
+## 📚 API Documentation
 
-示例：
-```bash
-export CUSTOM_DOMAIN=noise.aws.xin
-export USE_HTTPS=true
-python api.py
-```
+### Interactive Docs
 
----
+Visit http://0.0.0.0:5080/docs for full Swagger documentation.
 
-## 🛡️ 生产部署小抄
-- 后端已用 `waitress` 启动，多线程可配置
-- 反向代理（Nginx）示例：
-```nginx
-server {
-  listen 80;
-  server_name noise.aws.xin;
+### Main Endpoints
 
-  location / {
-    proxy_pass http://127.0.0.1:5080;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Forwarded-Host $host;
-  }
-}
-```
-- 文件清理：`tmp/` 超过 1 小时自动删除，任务状态超 2 小时清理
-- 安全性：下载路由校验路径，避免目录穿越
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Web UI |
+| `/docs` | GET | Swagger API docs |
+| `/health` | GET | Health check |
+| `/gpu/status` | GET | GPU status |
+| `/upload_async` | POST | Async upload |
+| `/status/<task_id>` | GET | Check task status |
+| `/api` | POST | Sync processing |
 
 ---
 
-## 🧩 常见问题（FAQ）
-- 首次调用很慢？
-  - 模型首次加载较重，建议保持进程常驻
-- ModelScope 报错？
-  - 确认 `datasets==3.0.0`；并检查系统是否安装 `libsndfile`、`ffmpeg`
-- 下载链接不对？
-  - 设置 `CUSTOM_DOMAIN` 和 `USE_HTTPS`，或确认你的反代头已正确传递
-- GPU 没生效？
-  - 确保安装与你 CUDA 版本匹配的 PyTorch 轮子
+## 🏗️ Project Structure
 
----
-
-## 🗂️ 目录结构（精简）
 ```
 .
-├── api.py                 # 唯一服务入口（内置 UI + API + 进度 + 清理）
-├── mcp_server.py          # MCP 服务器（可选）
-├── models/                # 轻量模型文件（开箱即用）
-├── tmp/                   # 运行时转码与输出（自动创建/清理）
-├── requirements.txt       # 项目依赖（含生产与 MCP 依赖）
-└── README.md
+├── api_enhanced.py          # Enhanced API service
+├── gpu_manager.py           # GPU resource manager
+├── ui_template.html         # Web UI template
+├── Dockerfile               # Docker image
+├── docker-compose.yml       # Docker Compose config
+├── start.sh                 # One-click startup script
+├── test_api.sh             # API test script
+├── Makefile                # Quick commands
+├── requirements.txt        # Python dependencies
+├── models/                 # Model cache
+└── tmp/                    # Temporary files
 ```
 
 ---
 
-## 🧪 一些实现细节（给工程同学）
-- FFmpeg 全程隐藏冗余日志，设有超时保护；错误日志透传到后端日志，便于排障
-- 转码/降噪前后均做文件校验，自动将 NaN/Inf 修复为 0，避免模型崩溃
-- 模型实例懒加载 + 进程内缓存，避免重复初始化
-- UI 使用渐变进度、阶段配色、统计信息（已处理时长、预计剩余、模型进度、处理速度）
-- 详细错误信息不会返回给用户，仅在后端日志记录，以平衡安全与易用
+## 🛠️ Tech Stack
+
+- **Backend**: Python 3.10+, Flask, Waitress
+- **AI Model**: ModelScope ZipEnhancer
+- **Deep Learning**: PyTorch, TorchAudio
+- **Audio Processing**: FFmpeg, SoundFile, LibROSA
+- **API Docs**: Flasgger (Swagger/OpenAPI)
+- **Containerization**: Docker, Docker Compose
+- **GPU**: CUDA 12.1, NVIDIA Docker
 
 ---
 
-## 🧵 MCP（可选，放在最后）
-若你需要在多代理/自动化工作流中以工具形式调用降噪服务，可使用本仓库提供的 MCP 服务器。
+## 🔧 Commands
 
-- 启动（建议 Python 3.11）：
+### Using Makefile
+
 ```bash
-python mcp_server.py
+make help      # Show all commands
+make start     # Start service
+make stop      # Stop service
+make restart   # Restart service
+make logs      # View logs
+make test      # Run tests
+make status    # Check status
+make health    # Health check
+make gpu       # GPU status
 ```
-- 工具：
-  - `denoise_path(path: str)` → 提交本地文件，返回 `task_id`
-  - `get_status(task_id: str)` → 查询进度/状态
-  - `get_result(task_id: str)` → 返回 `output_path` 与 `result_url`
-- 典型编排：`denoise_path` → 轮询 `get_status` → 完成后 `get_result` → 使用任意下载工具按 URL 获取文件
 
-> 说明：当前 MCP 官方 Python 包在 3.12 存在类型注解兼容问题，建议 3.11 运行 MCP 端。
+### Using Docker Compose
+
+```bash
+docker-compose up -d      # Start
+docker-compose down       # Stop
+docker-compose restart    # Restart
+docker-compose logs -f    # View logs
+```
 
 ---
 
-## 🏁 许可 & 致谢
-- 模型来源：ModelScope `damo/speech_zipenhancer_ans_multiloss_16k_base`
-- 若你在生产使用或做了二次开发，欢迎提交 PR / Issue，一起把它打磨得更好！💙
+## 🧪 Testing
+
+### Automated Tests
+
+```bash
+# Run test script
+./test_api.sh
+
+# Or use make
+make test
+```
+
+### Manual Testing
+
+1. **Web UI**: Visit http://0.0.0.0:5080 and upload a file
+2. **API**: Visit http://0.0.0.0:5080/docs and try endpoints
+3. **Health**: `curl http://localhost:5080/health`
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📝 Changelog
+
+### v2.0.0 (2025-12-05)
+- ✨ Complete Docker deployment
+- ✨ Auto GPU selection and management
+- ✨ Swagger API documentation
+- ✨ Enhanced Web UI with detailed instructions
+- ✨ Real-time progress tracking
+- ✨ One-click startup script
+
+### v1.0.0
+- 🎉 Initial release
+- 🎵 Basic audio denoising
+- 🌐 Web UI
+- 📡 API endpoints
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [ModelScope](https://modelscope.cn/) for the ZipEnhancer model
+- All contributors and users
+
+---
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/remove-noise-service&type=Date)](https://star-history.com/#yourusername/remove-noise-service)
+
+---
+
+## 📱 Follow Us
+
+![WeChat Official Account](https://img.aws.xin/uPic/扫码_搜索联合传播样式-标准色版.png)
+
+**Scan to follow "AI健自习室" for more AI tools and tutorials**
