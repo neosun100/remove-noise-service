@@ -22,6 +22,12 @@
 - 🔄 **Auto Cleanup**: Temporary files cleaned after 1 hour
 - 🌍 **Multi-language**: English, Chinese (Simplified/Traditional), Japanese
 
+### 📸 Web UI Preview
+
+![Web UI Screenshot](https://img.aws.xin/uPic/RJZXJa.png)
+
+*Modern web interface with drag-and-drop upload, real-time progress tracking, and instant download*
+
 ---
 
 ## 🚀 Quick Start
