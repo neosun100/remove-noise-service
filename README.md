@@ -19,16 +19,16 @@ docker run -d \
   neosun/noise-removal:v1.0-allinone
 
 # Wait 30 seconds for service to start
-# Access Swagger UI: http://localhost:5080/docs/
+# Access Swagger UI: http://0.0.0.0:5080/docs/
 ```
 
 That's it! No build required, no external dependencies, everything is included.
 
 ## 📚 API Documentation
 
-- **Swagger UI**: http://localhost:5080/docs/
-- **API Spec**: http://localhost:5080/swagger.json
-- **Health Check**: http://localhost:5080/health
+- **Swagger UI**: http://0.0.0.0:5080/docs/
+- **API Spec**: http://0.0.0.0:5080/swagger.json
+- **Health Check**: http://0.0.0.0:5080/health
 
 ## 🎯 Features
 
@@ -55,7 +55,7 @@ That's it! No build required, no external dependencies, everything is included.
 ### Synchronous Processing
 
 ```bash
-curl -X POST http://localhost:5080/api \
+curl -X POST http://0.0.0.0:5080/api \
   -F "audio=@noisy_audio.wav" \
   -o clean_audio.wav
 ```
@@ -65,7 +65,7 @@ curl -X POST http://localhost:5080/api \
 ```python
 import requests
 
-url = "http://localhost:5080/api"
+url = "http://0.0.0.0:5080/api"
 files = {"audio": open("noisy_audio.wav", "rb")}
 response = requests.post(url, files=files)
 
