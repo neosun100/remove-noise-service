@@ -1,0 +1,41 @@
+FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    ffmpeg \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# 复制requirements并安装
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt && \
+    pip3 install --no-cache-dir flask-swagger-ui
+
+# 复制所有项目文件
+COPY . .
+
+# 创建必要目录
+RUN mkdir -p /app/models /app/tmp /app/static /app/templates
+
+# 下载模型（预加载到镜像中）
+RUN python3 -c "from df.enhance import init_df; init_df()"
+
+# 修改api.py添加Swagger支持
+RUN echo '\n# Add Swagger support\nfrom api_swagger import add_swagger_routes\nadd_swagger_routes(app)\n' >> api.py
+
+ENV CUSTOM_DOMAIN=noise.aws.xin
+ENV USE_HTTPS=true
+ENV MODELSCOPE_CACHE=/app/models
+ENV HF_HOME=/app/models
+
+EXPOSE 5080
+
+CMD ["python3", "api.py"]

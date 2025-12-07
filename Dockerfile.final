@@ -1,0 +1,55 @@
+FROM nvidia/cuda:12.4.0-runtime-ubuntu22.04
+
+LABEL maintainer="neosun"
+LABEL description="All-in-One Audio Noise Removal Service with Swagger API Documentation"
+LABEL version="1.0.0"
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    MODELSCOPE_CACHE=/app/models \
+    HF_HOME=/app/models \
+    HF_HUB_DISABLE_SYMLINKS_WARNING=true \
+    CUSTOM_DOMAIN=noise.aws.xin \
+    USE_HTTPS=true
+
+WORKDIR /app
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    ffmpeg \
+    libsndfile1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制requirements并安装
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt --no-deps && \
+    pip3 install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 && \
+    pip3 install --no-cache-dir flask-swagger-ui
+
+# 复制所有项目文件
+COPY . .
+
+# 创建必要目录
+RUN mkdir -p /app/tmp /app/models && chmod -R 777 /app/tmp
+
+# 预下载模型到镜像中
+RUN python3 << 'PYTHON_SCRIPT'
+try:
+    from df.enhance import init_df
+    print("Downloading DeepFilterNet model...")
+    init_df()
+    print("Model downloaded successfully!")
+except Exception as e:
+    print(f"Model download will happen on first run: {e}")
+PYTHON_SCRIPT
+
+EXPOSE 5080
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:5080/health || exit 1
+
+CMD ["python3", "start_with_swagger.py"]
